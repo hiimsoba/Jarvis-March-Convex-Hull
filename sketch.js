@@ -56,12 +56,6 @@ function mouseDragged() {
   }
 }
 
-function swapInArray(arr, i, j) {
-  let aux = arr[i] ;
-  arr[i] = arr[j] ;
-  arr[j] = aux ;
-}
-
 let bt ;
 
 function draw() {
