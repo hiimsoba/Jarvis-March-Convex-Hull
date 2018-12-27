@@ -1,71 +1,99 @@
+// humans like to press buttons
+let create_hull_button;
+let create_hull_continuously_button;
+let generate_random_points_button;
+
+// will hold the points that form the convex hull... eventually
+let conv_hull = [];
+
+// store all the points in the canvas
+let points = [];
+
+// continuous? :o
+let continuous = true;
+
 function setup() {
-  createCanvas(600, 600) ;
-  createP("") ;
-  bt = createButton("Create hull!") ;
-  bt.mousePressed(createHull) ;
-  rand = createButton("Generate random points") ;
-  rand.mousePressed(genpoints) ;
-  background(0) ;
-  points.push(new point(200, 200)) ;
-  points.push(new point(200, 400)) ;
-  points.push(new point(400, 200)) ;
-  points.push(new point(400, 400)) ;
+  // create a 600x600 canvas
+  createCanvas(600, 600);
+
+  // new paragraph so the buttons appear nicely, under the canvas
+  createP("");
+
+  // self explanatory much
+  create_hull_button = createButton("Create hull");
+  create_hull_continuously_button = createButton("Create hull continuously");
+  generate_random_points_button = createButton("Generate random points");
+
+  // link functions to the mouse pressed event of the buttons
+  create_hull_button.mousePressed(createHull);
+  generate_random_points_button.mousePressed(generate_points);
+  // a little anonymous function for this one, since its functionality is quite simple
+  // switch the state of the "continuous" variable
+  // damn, that's kinda hard to spell, yikes
+  create_hull_continuously_button.mousePressed(() => {
+    continuous = !continuous;
+  });
+
+  // push 4 points initially, forming a square
+  points.push(new point(200, 200));
+  points.push(new point(200, 400));
+  points.push(new point(400, 200));
+  points.push(new point(400, 400));
 }
-
-function genpoints() {
-  for(let i = 0 ; i < 100 ; i++) {
-    points.push(new point(random(width), random(height))) ;
-  }
-}
-
-let hull = [] ;
-
-let rand ;
-
-function createHull() {
-  hull = convexHull(points) ;
-  stroke(0, 255, 100) ;
-  fill(255) ;
-  strokeWeight(0.5) ;
-  if(hull) {
-    fill(255, 50, 150, 50) ;
-    background(0) ;
-    beginShape() ;
-    for(let i = 0 ; i < hull.length - 1 ; i++) {
-      line(hull[i].x, hull[i].y, hull[i + 1].x, hull[i + 1].y) ;
-      vertex(hull[i].x, hull[i].y) ;
-    }
-    line(hull[0].x, hull[0].y, hull[hull.length - 1].x, hull[hull.length - 1].y) ;
-    vertex(hull[hull.length - 1].x, hull[hull.length - 1].y) ;
-    vertex(hull[0].x, hull[0].y) ;
-    endShape() ;
-  }
-}
-
-let clicked = false ;
-let points = [] ;
-
-function mouseDragged() {
-  if(!clicked) {
-    noStroke() ;
-    fill(255) ;
-    if(mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height) {
-      points.push(new point(mouseX, mouseY)) ;
-    }
-//    clicked = true ;
-  }
-}
-
-let bt ;
 
 function draw() {
-  if(!mouseIsPressed) {
-    clicked = false ;
+  // if the user wants to update the hull each frame, just do it!
+  if (continuous) {
+    createHull();
+    // also, only draw the points if we're updating the hull, because only then something will change
+    // white fill and stroke for the points
+    fill(255);
+    stroke(255);
+    // draw all of them
+    for (let p of points) {
+      p.render();
+    }
   }
-  createHull() ;
-  fill(255) ;
-  stroke(255) ;
-  for(let p of points) {
-    ellipse(p.x, p.y, 1, 1) ;
+}
+
+// creates the hull and draws it on the canvas
+function createHull() {
+  // get the convex hull from the set of points
+  conv_hull = convexHull(points);
+  // if the hull is not null or undefined... so basically, if there is a hull
+  if (conv_hull) {
+    // give it some fill color
+    fill(255, 50, 150, 50);
+    // and a stroke
+    stroke(0, 255, 100);
+    // reset the background
+    background(0);
+    // begin the shape of the hull
+    beginShape();
+    for (let i = 0; i < conv_hull.length; i++) {
+      // set a vertex at each point's position
+      vertex(conv_hull[i].x, conv_hull[i].y);
+    }
+    // close the shape
+    endShape(CLOSE);
+  }
+}
+
+// generate num points on the canvas, at random positions
+function generate_points(num = 100) {
+  for (let i = 0; i < num; i++) {
+    points.push(new point());
+  }
+}
+
+// add points when the mouse is dragged
+function mouseDragged() {
+  // make a little check if the point is between the boundaries of the canvas
+  if (mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height) {
+    // if so, add a point at the position of the mouse
+    let pt = new point(mouseX, mouseY);
+    points.push(pt);
+    // and also draw it
+    pt.render();
   }
 }
